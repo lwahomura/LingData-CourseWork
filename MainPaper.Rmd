@@ -1,0 +1,303 @@
+---
+output:
+  html_document: default
+  pdf_document: default
+---
+# Binary answers to OR-questions
+## Hypothesis
+There is quite a common pattern when one person ask another a question like "Would you like A or B" and gets an answer like "Yes" or "No". But which argument was meant by the answering person? Can we predict which was the chosen argument? What does this choice depend on? We can suppose that there are some factors influencing the answer, which may be:  
+- gender of the respondent;  
+- positiveness / negativeness of the answer;  
+- the existance of some context before the question.  
+
+**Assumption** :  
+There are cases when one has to choose from two options and one is much more favorable for the respondent; in this case if that argument is in a comfortable-to-define-by-yes  position (let's assume it is the first position), the answer will be "Yes" meaning something like "Yes, the first option"; otherwise it will be "No" meaning "No, not the second option".
+
+Now let's formulate some hypotheses:
+- the existence of context makes people mean the mentioned-in-context argument by the positive answer no matter which place it occupies more often;  
+- positive answer more often refers to the first argument;  
+- male and female tend to make emphasis on different arguments of the question no matter if the answer is positive or negative;  
+- the chosen factors are statistically significant so that they can be used to predict the argument emphasized by the respondent;  
+- people have their favourable way to answer - so the respondent is a significant random effect.  
+
+## Research design
+Testing of the mentioned hypotheses requires some data which has to be collected manually. The process will be described further. The 
+exemplary form of the collected data can be found in Table 1.
+
+##### Table 1. Exemplary form of the collected data.
+
+| reviewer | gender | question | answer | chosen_position | context_provided |
+|----------|--------|----------|--------|-----------------|------------------|
+| 1        | m      | 1        | Y      | 1               | N                |
+| 1        | m      | 2        | N      | 2               | Y                |
+| 2        | f      | 1        | Y      | 2               | N                |
+
+In order to test the first three hypotheses either Pearson's Chi-squared Test or Fisher's Exact Test will be used.
+
+The other two hypotheses will be tested using several models:  
+- logistic regression;  
+- decision tree;  
+- random forest. 
+
+## Data collection
+To collect the data to run the models based on a google form with questions will be made. The gender of the reviewer will be asked firstly and then there will be questions of this kind:  
+- Your friend asked you: "What'd you like on your sandwich: cheese or ham?" Assuming you wanted cheese, how would you answer: "Yes" (meaning "Yes, cheese") or "No" (meaning "No, not ham")?  
+Or this one:  
+- You've discussed the recent news about your favourite football team. Then a friend yours asked: "Would you like to play football or volleyball?" Assuming you wanted to play football, how would you answer: "Yes" (meaning "Yes, football") or "No" (meaning "No, not volleyball")?  
+
+This form of questions has been chosen instead of "... Assuming that you answered 'Yes', which one did you mean?" so that personal preferences won't affect the results.
+
+There will be 8 questions asked - 2 questions for each combination of the researched factors. The questions can be seen in Table 2; the factors' values - Table 3. 
+
+##### Table 2. Questions asked.
+
+| Question | Text                                                                                                                                                                                                                                                                                                                                                                   | Answer 1                                           | Answer 2                                                             |
+|----------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------|----------------------------------------------------------------------|
+| 1        | Ваш одногруппник спрашивает вас: "Пойдем на пару или прогуляем?" С учетом того, что вы бы хотели посетить пару, как бы вы ответили?                                                                                                                                                                                                                                    | "Да" (в смысле "Да, пойдем на пару")               | "Нет" (в смысле "Нет, не будем прогуливать")                         |
+| 2        | Ваш друг интересуется у вас как-то вечером: "Давай посмотрим что-нибудь. Ты хочешь глянуть какую-нибудь драму или комедию?" Как бы вы ответили, если бы хотели посмотреть комедию?                                                                                                                                                                                     | "Да" (в смысле "Да, комедию")                      | "Нет" (в смысле "Нет, не драму")                                     |
+| 3        | Самоизоляция идет уже который месяц, заказывать еду надоедает. Теперь уже домашняя еда становится желаннее. И вот в один вечер родня интересуется у вас: "Закажем еды или приготовим сами?" Как бы вы ответили, чтобы дать понять, что хотите домашней еды?                                                                                                            | "Да" (в смысле "Да, приготовим")                   | "Нет" (в смысле "Нет, не будем заказывать")                          |
+| 4        | С детства вы ужасно хотели завести собаку, однако родители были против. Прошло много лет, и одним вечером партнер внезапно спрашивает у вас: "Давай заведем животное! Хочешь кошку или собаку?" Как вы ответите с учетом того, что мечтаете именно о собаке?                                                                                                           | "Да" (в смысле "Да, собаку")                       | "Нет" (в смысле "Нет, не кошку")                                     |
+| 5        | Ваш одногруппник, с которым вы обыкновенно вместе делаете домашки, спрашивает вас: "Сделаем математику до дедлайна или забьём и сдадим после срока?" С учетом того, что вы решили взяться за голову и больше не просрочивать дедлайны и хотите заняться математикой, как бы вы ответили?                                                                               | "Да" (в смысле "Да, сделаем и сдадим до дедлайна") | "Нет" (в смысле "Нет, не будем забивать")                            |
+| 6        | Вы с друзьями поехали на море, и вот настал момент, ради которого вы ходили на занятия по волейболу - друзья спрашивают вас: "Сыграем в волейбол или пойдем поплаваем в море?" С учетом того, что вы бы очень хотели показать им, как вы хороши в волейболе, как бы вы ответили?                                                                                       | "Да" (в смысле "Да, давайте в волейбол")           | "Нет" (в смысле "Нет, не пойдем плавать")                            |
+| 7        | Представим, что в детстве вас бы спросили родители: "Ты хочешь пойти учиться играть на пианино или на скрипке?" Как бы вы ответили, если бы хотели учиться играть на скрипке?                                                                                                                                                                                          | "Да" (в смысле "Да, я бы хотел играть на скрипке") | "Нет" (в смысле "Нет, мне бы не хотелось учиться играть на пианино") |
+| 8        | Вам нравится заполнять различные тесты и опросники, и ваши друзья часто просят вам помочь им, ответив на вопросы, чтобы они могли сдавать курсовые работы и тд. И вот в очередной раз вам пишет друг и просит: "Ты сейчас занят или можешь помочь мне и пройдешь небольшой опросник?" С учетом того, что вы не особо против пройти небольшой тест, как бы вы ответили? | "Да" (в смысле "Да, я пройду")                     | "Нет" (в смысле "Нет, я не занят сейчас")                            |
+
+
+##### Table 3. Questions and factor values.
+
+| Context exists? | Argument to choose | Questions |
+|-----------------|--------------------|-----------|
+| No              | A                  | 1,5       |
+| No              | B                  | 2,7       |
+| Yes             | A                  | 3,6       |
+| Yes             | B                  | 4,8       |
+
+## Collected data
+A total of 40 people have completed the form:
+```{r, echo=T, results='hide', message=F, warning=F}
+library(tidyverse)
+form_results <- read_csv2("https://raw.githubusercontent.com/lwahomura/LingData-CourseWork/master/Form%20Results2.csv")
+```
+```{r}
+form_results
+```
+
+As we can see, the distibution of respondents' genders is nearly 50:50 :
+```{r}
+library(ggplot2)
+respondents <- data.frame(table(distinct(form_results[,1:2])$Respondent_gender))
+
+main_colours <- c("#cc8c12", "#00bfc4")
+
+ggplot(respondents, aes(x="", y=Freq, fill = Var1)) +
+  geom_bar(width = 1, stat = "identity", color = "white")+ 
+  coord_polar("y", start=0) +
+  geom_text(aes(label = Freq), position = position_stack(vjust = 0.5), color = "white") +
+  theme_void() +
+  labs(fill = "Gender", title = "Respondent gender distribution") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  scale_fill_manual(values=main_colours)
+
+```
+
+## Data analysis
+In order to work with data we should at first transform the collected data so that all the columns we'll work with will have only numeric values; we also need a column with the empasized argument which is calculated in this way: if the respondent needs to choose argument A and answers positively, argument A has been emphasized; if negatively - argument B (the same for choosing argument B).
+```{r}
+form_results_trans <- mutate(form_results, Gender_binary = 1 * (Respondent_gender == 'm'))
+form_results_trans <-  mutate(form_results_trans, Argument_binary = 1 * (Chosen_argument == 'B'))
+form_results_trans <- mutate(form_results_trans, Emphasized_Argument = (Answer_positiveness == Argument_binary) * 1 ) 
+form_results_trans
+```
+
+Let's see how've the people answered the questions; as we have two questions for each combination of the factors the bars will be oreder by that combination.
+```{r}
+answers_pos <- form_results_trans %>% group_by(Context_exists, Argument_binary, Question, Answer_positiveness) %>% summarise(ans_count = n())
+answers_pos <- mutate(answers_pos, Q_order = 2 * Context_exists + Argument_binary)
+ggplot(answers_pos, aes(x = reorder(factor(Question), Q_order), y=ans_count, fill = factor(Answer_positiveness))) +
+  geom_bar(width = 1, stat = "identity", color = "white") +
+  labs(x = "Question", y = "Answer count") +
+  scale_fill_manual(name = "Answer positiveness", labels = c("negative", "positive"), values=main_colours)
+```
+
+As we can see, people tend to answer "Yes" more often no matter which argument they mean - first or second. 
+
+Now let's see how the context existance and the meant argument effect the results:
+```{r}
+answers_con <- form_results_trans %>% group_by(Context_exists, Answer_positiveness) %>% summarise(ans_count = n())
+ggplot(answers_con, aes(x = factor(Context_exists), y=ans_count, fill = factor(Answer_positiveness))) +
+  geom_bar(width = 1, stat = "identity", color = "white") +
+  labs(y = "Answer count") +
+  scale_x_discrete(name = "Context exists", labels = c("no", "yes")) +
+  scale_fill_manual(values=main_colours, name = "Answer positiveness", labels = c("negative", "positive"))
+
+answers_arg <- form_results_trans %>% group_by(Chosen_argument, Answer_positiveness) %>% summarise(ans_count = n())
+ggplot(answers_arg, aes(x = factor(Chosen_argument), y=ans_count, fill = factor(Answer_positiveness))) +
+  geom_bar(width = 1, stat = "identity", color = "white") +
+  labs(y = "Answer count") +
+  scale_x_discrete(name = "Chosen argument", labels = c("first", "second")) +
+  scale_fill_manual(name = "Answer positiveness", labels = c("negative", "positive"), values=main_colours)
+```
+
+As we can see, people tend to answer "Yes" in most cases.
+
+Let's also inspect how the chosen argument is presented:  
+```{r}
+answers_emp <- form_results_trans %>% group_by(Emphasized_Argument, Chosen_argument) %>% summarise(ans_count = n())
+ggplot(answers_emp, aes(x = factor(Emphasized_Argument), y=ans_count, fill=factor(Emphasized_Argument))) +
+  geom_bar(width = 1, stat = "identity", color = "white") +
+  labs(y = "Answer count") +
+  scale_x_discrete(name = "Emphasized argument", labels = c("A", "B")) + 
+  facet_grid(cols = vars(Chosen_argument)) +
+  scale_fill_manual(values=main_colours) + 
+  theme(legend.position = "none")
+```
+
+As we can see, people more often put emphasis on argument A to choose it; for choosing argument B we can see the opposite situation.
+
+The initial data analysis shows that people usually answer positively to the OR-questions; though we should test the hypothesis by more accurate methods than visualization.
+
+## Testing hypotheses
+### First hypothesis
+##### The existence of context makes people mean the mentioned-in-context argument by the positive answer no matter which place it occupies more often
+The first hypothesis states that if any context've been provided before the question, people will emphasize the mentioned-in-context argument more often that another one.
+```{r}
+first_hyp_table <- form_results_trans %>% group_by(Context_exists, Emphasized_Argument) %>% summarise(ans_count = n())
+first_hyp_table
+```
+
+We can use Pearson's Chi-squared Test because the limitations of its usage are not violated; the null hypothesis is that two factors are independent.
+```{r}
+first_hyp_test <- chisq.test(form_results_trans$Context_exists, form_results_trans$Emphasized_Argument)
+first_hyp_test
+first_hyp_odds_ratio <- (first_hyp_test$observed[1,1] / first_hyp_test$observed[2,1]) / (first_hyp_test$observed[1,2] / first_hyp_test$observed[2,2])
+first_hyp_odds_ratio
+```
+
+The p-value is greater than 0.05, so we do not reject the null hypothesis. The existence of context and the emphasized argument are independent; the odds ration tells us that the existence of context make people emphasize the second argument only 1.16 times more often than expected. Thus, our first hypothesis is incorrect.
+
+##### Positive answer more often refers to the first argument
+```{r}
+second_hyp_table <- form_results_trans %>% group_by(Chosen_argument, Answer_positiveness) %>% summarise(ans_count = n())
+second_hyp_table
+```
+
+We can use Pearson's Chi-squared Test because the limitations of its usage are not violated; the null hypothesis is that two factors are independent.
+
+```{r}
+second_hyp_test <- chisq.test(form_results_trans$Answer_positiveness, form_results_trans$Chosen_argument)
+second_hyp_test
+second_hyp_odds_ratio <- (second_hyp_test$observed[1,1] / second_hyp_test$observed[2,1]) / (second_hyp_test$observed[1,2] / second_hyp_test$observed[2,2])
+second_hyp_odds_ratio
+```
+
+The p-value is greater than 0.05, so we do not reject the null hypothesis. The answer positiveness and the chosen argument are independent; the odds ration tells us that people choose to answer "Yes" tо mean the second argument 1.37 times more often than expected. Thus, our second hypothesis is incorrect.
+
+##### Male and female tend to make emphasis on different arguments of the question no matter if the answer is positive or negative
+
+```{r}
+third_hyp_table <- form_results_trans %>% group_by(Gender_binary, Emphasized_Argument) %>% summarise(ans_count = n())
+third_hyp_table
+```
+
+We can use Pearson's Chi-squared Test because the limitations of its usage are not violated; the null hypothesis is that two factors are independent.
+
+```{r}
+third_hyp_test <- chisq.test(form_results_trans$Gender_binary, form_results_trans$Emphasized_Argument)
+third_hyp_test
+third_hyp_odds_ratio <- (third_hyp_test$observed[1,1] / third_hyp_test$observed[2,1]) / (third_hyp_test$observed[1,2] / third_hyp_test$observed[2,2])
+third_hyp_odds_ratio
+```
+
+The p-value is less than 0.05, so we do reject the null hypothesis. The gender of the respondent and the emphasized argument are not independent; the odds ration tells us that female make emphasis on the first argument and male make emphasis on the second argument both 0.56 times less often than expected. Thus, our third hypothesis is correct.  
+Let's build a plot to illustrate this:
+```{r}
+answers_gender_emph <- form_results_trans %>% group_by(Emphasized_Argument, Gender_binary) %>% summarise(ans_count = n())
+ggplot(answers_gender_emph, aes(x = factor(Gender_binary), y=ans_count, fill=factor(Emphasized_Argument))) +
+  geom_bar(width = 1, stat = "identity", color = "white") +
+  labs(y = "Answer count") +
+  scale_x_discrete(name = "Gender", labels = c("female", "male")) +
+  scale_fill_manual(name = "Emphasized argument", labels = c("A", "B"), values=main_colours)
+```
+
+##### The chosen factors are statistically significant so that they can be used to predict the argument emphasized by the respondent
+In oreder to test the hypothesis we need to build some models predicting the emphasized argument using the chosen factors:
+```{r}
+glm1 <- glm(Emphasized_Argument ~ Context_exists + Answer_positiveness + Gender_binary, form_results_trans, family = "binomial")
+summary(glm1)
+```
+As we can see, the only significant factor is the gender; if the respondent is male, the chance he emphasizes on the second argument drops by 0.58.
+Let's see if we can use only gender to predict the argument. In order to do it we need to build a new model and make an anova test for the models.
+
+```{r}
+glm2 <- glm(Emphasized_Argument ~ Gender_binary , form_results_trans, family = "binomial")
+summary(glm2)
+```
+
+```{r}
+anova(glm1, glm2, test='Chisq')
+```
+
+As we can see, gender is still significant in the second model. Moreover, the anova test stated that the models are equal.
+
+##### People have their favourable way to answer - so the respondent is a significant random effect
+In order to test this let's transform the formula used in the models:
+```{r}
+glm3 <- glm(Emphasized_Argument ~ Gender_binary + (1|Respondent), form_results_trans, family = "binomial")
+summary(glm3)
+```
+
+```{r}
+#require(caTools)
+#set.seed(42)
+#sample = sample.split(form_results_trans, SplitRatio = 0.8) 
+#train = subset(form_results_trans,sample == TRUE) 
+#test = subset(form_results_trans, sample == FALSE)
+```
+
+```{r}
+#prediction_glm <- glm(Emphasized_Argument ~ Context_exists + Answer_positiveness + Gender_binary, train, family = "binomial")
+#test$GLMPrediction <- predict(prediction_glm, newdata = test, type = 'response')
+```
+
+```{r}
+#best <- 0
+#for (threshold in seq(0, 1, by=0.001)) {
+#  tp <- 0
+#  tn <- 0
+#  for (row in 1:nrow(test)) {
+#    if ((test[row, "Emphasized_Argument"] == 0) & (test[row, "GLMPrediction"] <= threshold)) {
+#        tp <- tp + 1
+#    }
+#    if ((test[row, "Emphasized_Argument"] == 1) & (test[row, "GLMPrediction"] > threshold)) {
+#        tn <- tn + 1
+#    }
+#  }
+#  acc <- (tp + tn) / nrow(test)
+#  if (acc > best) {
+#    best <- acc
+#    print(sprintf("threshold: %f", threshold))
+#    print(sprintf("accuracy: %f", acc))
+#  }
+#}
+
+```
+
+
+```{r}
+#library(rpart)
+#library(rpart.plot)
+#prediction_tree <- rpart(Emphasized_Argument ~ Context_exists + Answer_positiveness + Gender_binary, data = train, method = 'class')
+```
+
+```{r}
+#test$TreePrediction <- predict(prediction_tree, newdata = test, type = 'class')
+```
+```{r}
+#library(party)
+#prediction_forest <- cforest(Emphasized_Argument ~ Context_exists + Answer_positiveness + Gender_binary, data = train, #control=cforest_unbiased(ntree=1000, mtry=3))
+```
+
+```{r}
+#test$ForestPrediction <- predict(prediction_forest, newdata = test, type = 'response')
+```
+## Results
