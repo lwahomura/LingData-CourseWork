@@ -19,7 +19,7 @@ The context has been chosen because it seemed to be expected for one to answer "
 There are cases when one has to choose from two options and one is much more favorable for the respondent; in this case if that argument is in a comfortable-to-define-by-yes  position (let's assume it is the first position), the answer will be "Yes" meaning something like "Yes, the first option"; otherwise it will be "No" meaning "No, not the second option".  
 It's also worth mentioning that even though sometimes the answer mean "Any of these" or "None of this", we won't research such answers, we're currenlty interested in answers referring to one of the arguments.
 
-Now let's formulate some hypotheses:
+Now let's formulate some hypotheses:  
 - the existence of context makes people mean the mentioned-in-context argument by the positive answer no matter which place it occupies more often;  
 - positive answer more often refers to the first argument;  
 - male and female tend to make emphasis on different arguments of the question no matter if the answer is positive or negative;  
@@ -194,7 +194,7 @@ first_hyp_odds_ratio <- (first_hyp_test$observed[1,1] / first_hyp_test$observed[
 first_hyp_odds_ratio
 ```
 
-The p-value is greater than 0.05, so we do not reject the null hypothesis. The existence of context and the emphasized argument are independent; the odds ration tells us that the existence of context make people emphasize the second argument only 1.16 times more often than expected. Thus, our first hypothesis is incorrect.
+The p-value is greater than 0.05, so we do not reject the null hypothesis. The existence of context and the emphasized argument seem to be independent; the odds ration tells us that the existence of context make people emphasize the second argument only 1.16 times more often than expected. Thus, our first hypothesis is incorrect.
 
 ##### Positive answer more often refers to the first argument
 ```{r}
@@ -211,7 +211,7 @@ second_hyp_odds_ratio <- (second_hyp_test$observed[1,1] / second_hyp_test$observ
 second_hyp_odds_ratio
 ```
 
-The p-value is greater than 0.05, so we do not reject the null hypothesis. The answer positiveness and the chosen argument are independent; the odds ration tells us that people choose to answer "Yes" tо mean the second argument 1.37 times more often than expected. Thus, our second hypothesis is incorrect.
+The p-value is greater than 0.05, so we do not reject the null hypothesis. The answer positiveness and the chosen argument seem to be independent; the odds ration tells us that people choose to answer "Yes" tо mean the second argument 1.37 times more often than expected. Thus, our second hypothesis is incorrect.
 
 ##### Male and female tend to make emphasis on different arguments of the question no matter if the answer is positive or negative
 
@@ -302,5 +302,5 @@ create_rfplot(fit5, type = 2)
 We've built a plot for factor importance measured by decreasing the node impurity, and as we see, the most important factor is gender.
 
 ## Results
-The research has been done in order to find out if some factor influences th choice of the answer on OR-question. Turned out that the only significant factor is gender of the respondent - male make emphasis on the second word less often than women, so the next time a male answers "Yes" he can immediately be asked if he meant the first argument, and he will probably be impressed that his thought has been interpretted correctly. It also turned out that people may have their favourable way to answer on OR-question, which should also be considered.  
+The research has been done in order to find out if some factor influences the choice of the answer on OR-question. Turned out that the only significant factor is gender of the respondent - male make emphasis on the second word less often than women, so the next time a male answers "Yes" he can immediately be asked if he meant the first argument, and he will probably be impressed that his thought has been interpretted correctly. It also turned out that people may have their favourable way to answer on OR-question, which should also be considered.  
 The research can be continued because there are even more things to test: are there more significant factors? how often do people mean "any of the provided choices" while answering positively? can the results be implied to other languages?
